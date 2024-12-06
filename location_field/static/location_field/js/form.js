@@ -419,14 +419,25 @@ var SequentialLoader = function() {
 
                 var marker = L.marker(center, markerOptions).addTo(map);
 
+                marker.on('dragstart', function(){
+                    if (self.options.inputField.is('[readonly]'))
+                        marker.dragging.disable();
+                    else
+                        marker.dragging.enable();
+                });
+
                 // fill input on dragend
                 marker.on('dragend move', function(){
-                    self.fill(this.getLatLng());
+                    if (!self.options.inputField.is('[readonly]'))
+                        self.fill(this.getLatLng());
                 });
 
                 // place marker on map click
                 map.on('click', function(e){
-                    marker.setLatLng(e.latlng);
+                    if (!self.options.inputField.is('[readonly]')) {
+                        marker.setLatLng(e.latlng);
+                        marker.dragging.enable();
+                    }
                 });
 
                 return marker;
@@ -437,15 +448,17 @@ var SequentialLoader = function() {
                     basedFields = this.options.basedFields,
                     onchangeTimer,
                     onchange = function() {
-                        var values = basedFields.map(function() {
-                            var value = $(this).val();
-                            return value === '' ? null : value;
-                        });
-                        var address = values.toArray().join(', ');
-                        clearTimeout(onchangeTimer);
-                        onchangeTimer = setTimeout(function(){
-                            self.search(map, marker, address);
-                        }, 300);
+                        if (!self.options.inputField.is('[readonly]')) {
+                            var values = basedFields.map(function() {
+                                var value = $(this).val();
+                                return value === '' ? null : value;
+                            });
+                            var address = values.toArray().join(', ');
+                            clearTimeout(onchangeTimer);
+                            onchangeTimer = setTimeout(function(){
+                                self.search(map, marker, address);
+                            }, 300);
+                        }
                     };
 
                 basedFields.each(function(){
