@@ -456,6 +456,16 @@ var SequentialLoader = function() {
                     else
                         el.keyup(onchange);
                 });
+                
+                if (this.options.inputField.val() === '') {
+                    var values = basedFields.map(function() {
+                        var value = $(this).val();
+                        return value === '' ? null : value;
+                    });
+                    var address = values.toArray().join(', ');
+                    if (address !== '')
+                        onchange();
+                }
             },
 
             __fixMarker: function() {
